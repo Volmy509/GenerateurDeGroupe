@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Générateur de Groupes</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive -->
+  <meta name="theme-color" content="#3498db">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<!-- CORPS DE LA PAGE -->
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+
+  <h1 class="text-2xl md:text-3xl font-bold text-blue-600 mb-6 text-center">🎲 Générateur de Groupes</h1>
+  
+  <!-- Zone de saisie -->
+  <div class="w-full max-w-md bg-white shadow-lg rounded-2xl p-4 mb-6">
+    <label class="block text-gray-700 font-medium mb-2">Liste des membres :</label>
+    <textarea id="names" rows="4" 
+      class="w-full border rounded-lg p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base" 
+      placeholder="Ex: Alice, Bob, Chloé, David..."></textarea>
+    
+    <label class="block text-gray-700 font-medium mt-4">Nombre de groupes :</label>
+    <input type="number" id="groupCount" min="2" value="2" 
+      class="w-full border rounded-lg p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm md:text-base">
+    
+    <!-- Boutons -->
+    <div class="grid grid-cols-2 gap-2 mt-4 sm:flex sm:flex-wrap sm:gap-2 sm:justify-center">
+      <button onclick="generateGroups()" 
+        class="bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700 w-full sm:w-auto">
+        Créer
+      </button>
+      <button onclick="shuffleGroups()" 
+        class="bg-gray-500 text-white px-4 py-2 rounded-xl shadow hover:bg-gray-600 w-full sm:w-auto">
+        Re-mélanger
+      </button>
+      <button onclick="saveNames()" 
+        class="bg-green-600 text-white px-4 py-2 rounded-xl shadow hover:bg-green-700 w-full sm:w-auto">
+        Sauvegarder
+      </button>
+      <button onclick="loadNames()" 
+        class="bg-yellow-500 text-white px-4 py-2 rounded-xl shadow hover:bg-yellow-600 w-full sm:w-auto">
+        Charger
+      </button>
+      <button onclick="clearNames()" 
+        class="bg-red-600 text-white px-4 py-2 rounded-xl shadow hover:bg-red-700 w-full sm:w-auto">
+        Effacer
+      </button>
+    </div>
+  </div>
+
+  <!-- Résultat -->
+  <div id="result" class="w-full max-w-3xl flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4"></div>
+
+  <script>
+    let currentGroups = [];
+
+    function getRandomColor() {
+      const colors = [
+        "bg-blue-500", "bg-red-500", "bg-green-500", 
+        "bg-purple-500", "bg-yellow-500", "bg-teal-500", "bg-orange-500"
+      ];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+//FONCTION QUI RECUPERE LES NOMS POUR LES AFFICHER DANS UN GROUPE DE FACON ALEATOIRE
+    function generateGroups() {
+      const names = document.getElementById("names").value.split(",").map(n => n.trim()).filter(n => n);
+      const groupCount = parseInt(document.getElementById("groupCount").value);
+
+// CONDITIO SI LE NOMBRE DE NOM EST INFERIEUR AU NOMBRE DE GOUPES DEMANDE 
+      if (names.length < groupCount) {
+        alert("Il y a moins de noms que de groupes !");
+        return;
+      }
+
+      let shuffled = names.sort(() => 0.5 - Math.random());
+      currentGroups = Array.from({length: groupCount}, () => []);
+
+      shuffled.forEach((name, i) => {
+        currentGroups[i % groupCount].push(name);
+      });
+
+      displayGroups();
+    }
+
+    function shuffleGroups() {
+      if (currentGroups.length === 0) return;
+      generateGroups();
+    }
+
+    function displayGroups() {
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+// CREATION DES CARTES POUR AFFICEHR CHAQUE GROUPES 
+      currentGroups.forEach((group, i) => {
+        const groupDiv = document.createElement("div");
+        groupDiv.className = `w-full sm:w-[200px] p-4 rounded-2xl shadow-lg text-white ${getRandomColor()}`;
+
+        const input = document.createElement("input");
+        input.value = "Équipe " + (i+1);
+        input.className = "w-full bg-transparent text-center font-bold text-lg border-b border-white mb-2";
+        groupDiv.appendChild(input);
+
+        const list = document.createElement("ul");
+        group.forEach(member => {
+          const li = document.createElement("li");
+          li.textContent = member;
+          li.className = "text-center text-sm";
+          list.appendChild(li);
+        });
+        groupDiv.appendChild(list);
+
+        resultDiv.appendChild(groupDiv);
+      });
+    }
+
+    // --- Gestion sauvegarde ---
+    function saveNames() {
+      const names = document.getElementById("names").value;
+      if (!names.trim()) {
+        alert("La liste est vide !");
+        return;
+      }
+      localStorage.setItem("savedNames", names);
+      alert("✅ Liste sauvegardée !");
+    }
+
+    function loadNames() {
+      const saved = localStorage.getItem("savedNames");
+      if (saved) {
+        document.getElementById("names").value = saved;
+        alert("✅ Liste chargée !");
+      } else {
+        alert("⚠️ Aucune liste enregistrée !");
+      }
+    }
+
+    function clearNames() {
+      localStorage.removeItem("savedNames");
+      document.getElementById("names").value = "";
+      alert("🗑️ Liste effacée !");
+    }
+
+    // Service Worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
+</body>
+</html>
