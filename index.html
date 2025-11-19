@@ -67,7 +67,7 @@
       const names = document.getElementById("names").value.split(",").map(n => n.trim()).filter(n => n);
       const groupCount = parseInt(document.getElementById("groupCount").value);
 
-// CONDITIO SI LE NOMBRE DE NOM EST INFERIEUR AU NOMBRE DE GOUPES DEMANDE 
+// CONDITION SI LE NOMBRE DE NOM EST INFERIEUR AU NOMBRE DE GOUPES DEMANDE 
       if (names.length < groupCount) {
         alert("Il y a moins de noms que de groupes !");
         return;
@@ -91,6 +91,7 @@
     function displayGroups() {
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
+      
 // CREATION DES CARTES POUR AFFICEHR CHAQUE GROUPES 
       currentGroups.forEach((group, i) => {
         const groupDiv = document.createElement("div");
